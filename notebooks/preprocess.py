@@ -1,11 +1,11 @@
 """ Preprocessing utils """
 def chargram(token, n=3):
     """ Convert word into character level ngrams.
-    
+
     We pad both ends of the word with _ tokens on both ends for `wide` ngrams
-    
+
     Eg:
-        
+
         ['__i', '_in', 'inp', 'npu', 'put', 'ut_', 't__'] = str_to_char_ngrams('input', 3)
     """
     token = '_'*(n-1) + token + '_'*(n-1)
@@ -21,7 +21,7 @@ def pad_tensor(tensor, pad_symbol):
     if not isinstance(tensor[0], (list,tuple)):
         return tensor
 
-    
+
     pad_len = max(len(sub_tensor) for sub_tensor in tensor)
     tensor = type(tensor)([ type(sub_tensor)(pad_tensor(
                                 [element for element in sub_tensor]
@@ -74,16 +74,19 @@ def index_to_sequence(sentence, vocab):
 def indices_to_sequences(sentences, vocab):
     return [ index_to_sequenceactivity(sentence, vocab) for sentence in sentences ]
 
-def pad_sequence(sentence, pad, pad_len):
+def pad_sequence(sentence, pad, pad_len, weight_map={}):
     padded_sequence = sentence + [pad]*(pad_len-len(sentence))
-    pad_weight = [1]*len(sentence) + [0]*(pad_len - len(sentence))
+    if weight_map:
+        pad_weight = [ weight_map[s] for s in padded_sequence ]
+    else:
+        pad_weight = [1]*len(sentence) + [0]*(pad_len - len(sentence))
     return padded_sequence, pad_weight
 
-def pad_sequences(sentences, pad):
+def pad_sequences(sentences, pad, weight_map={}):
     pad_len = max(len(sentence) for sentence in sentences)
     pad_sequences, pad_weights = [], []
     for sequence in sentences:
-        padded_sequence, pad_weight = pad_sequence(sequence, pad, pad_len)
+        padded_sequence, pad_weight = pad_sequence(sequence, pad, pad_len, weight_map)
         pad_sequences.append(padded_sequence)
         pad_weights.append(pad_weight)
     return pad_sequences, pad_weights, pad_len
